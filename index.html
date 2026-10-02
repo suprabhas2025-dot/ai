@@ -3,841 +3,1102 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Art Mentor 🎨</title>
+<title>Art Mentor 🎨</title>
 
-    <style>
+<style>
 
-        * {
-            box-sizing: border-box;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            color: #222;
-            transition: background 0.25s, color 0.25s;
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    color: #222;
+    transition: 0.25s;
+}
 
-        body.dark {
-            background: #121212;
-            color: #eeeeee;
-        }
+body.dark {
+    background: #121212;
+    color: #eee;
+}
 
-        .chat-container {
-            width: 650px;
-            max-width: 95%;
-            height: 750px;
-            margin: 25px auto;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-            transition: background 0.25s, box-shadow 0.25s;
-        }
+.app {
+    display: flex;
+    height: 100vh;
+}
 
-        body.dark .chat-container {
-            background: #1e1e1e;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-        }
+/* SIDEBAR */
 
-        .header {
-            background: #222;
-            color: white;
-            padding: 18px 20px;
-            text-align: center;
-            position: relative;
-        }
+.sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #ddd;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+}
 
-        .header h1 {
-            margin: 0;
-        }
+body.dark .sidebar {
+    background: #1b1b1b;
+    border-color: #444;
+}
 
-        .header p {
-            margin-bottom: 0;
-        }
+.sidebar h2 {
+    margin-top: 0;
+}
 
-        #themeButton {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            background: #444;
-            color: white;
-            padding: 8px 10px;
-            font-size: 18px;
-        }
+#historySearch {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
 
-        #themeButton:hover {
-            background: #555;
-        }
+body.dark #historySearch {
+    background: #292929;
+    color: white;
+    border-color: #555;
+}
 
-        #messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
+.history {
+    flex: 1;
+    overflow-y: auto;
+}
 
-        .message {
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            max-width: 85%;
-            line-height: 1.5;
-            overflow-wrap: break-word;
-        }
+.history-item {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    background: #f1f1f1;
+}
 
-        .user {
-            background: #dbeafe;
-            color: #222;
-            margin-left: auto;
-        }
+.history-item:hover {
+    background: #ddd;
+}
 
-        body.dark .user {
-            background: #263b52;
-            color: #eeeeee;
-        }
+body.dark .history-item {
+    background: #292929;
+}
 
-        .ai {
-            background: #eeeeee;
-            color: #222;
-            margin-right: auto;
-        }
+body.dark .history-item:hover {
+    background: #3a3a3a;
+}
 
-        body.dark .ai {
-            background: #2b2b2b;
-            color: #eeeeee;
-        }
+.history-delete {
+    float: right;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+}
 
-        .art-preview {
-            max-width: 250px;
-            max-height: 250px;
-            display: block;
-            margin-top: 10px;
-            border-radius: 8px;
-        }
+/* MAIN */
 
-        .input-area {
-            padding: 15px;
-            border-top: 1px solid #ddd;
-            background: white;
-            transition: background 0.25s, border-color 0.25s;
-        }
+.chat-container {
+    width: 650px;
+    max-width: 95%;
+    height: 750px;
+    margin: auto;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
 
-        body.dark .input-area {
-            background: #1e1e1e;
-            border-top-color: #444;
-        }
+body.dark .chat-container {
+    background: #1e1e1e;
+}
 
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
+.header {
+    background: #222;
+    color: white;
+    padding: 18px;
+    text-align: center;
+    position: relative;
+}
 
-        #messageInput {
-            flex: 1;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            outline: none;
-            background: white;
-            color: #222;
-        }
+.header h1 {
+    margin: 0;
+}
 
-        #messageInput:focus {
-            border-color: #555;
-        }
+.header p {
+    margin-bottom: 0;
+}
 
-        body.dark #messageInput {
-            background: #2b2b2b;
-            color: white;
-            border-color: #555;
-        }
+.header-buttons {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: flex;
+    gap: 5px;
+}
 
-        body.dark #messageInput::placeholder {
-            color: #aaa;
-        }
+.header-buttons button {
+    padding: 8px 10px;
+}
 
-        button {
-            padding: 12px 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-        }
+#messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
 
-        #attachButton {
-            background: #eee;
-        }
+.message {
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    max-width: 85%;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+}
 
-        #attachButton:hover {
-            background: #ddd;
-        }
+.user {
+    background: #dbeafe;
+    margin-left: auto;
+}
 
-        body.dark #attachButton {
-            background: #444;
-            color: white;
-        }
+body.dark .user {
+    background: #263b52;
+}
 
-        body.dark #attachButton:hover {
-            background: #555;
-        }
+.ai {
+    background: #eee;
+    margin-right: auto;
+}
 
-        #sendButton {
-            background: #222;
-            color: white;
-        }
+body.dark .ai {
+    background: #2b2b2b;
+}
 
-        #sendButton:hover {
-            background: #444;
-        }
+.art-preview {
+    max-width: 250px;
+    max-height: 250px;
+    display: block;
+    margin-top: 10px;
+    border-radius: 8px;
+}
 
-        #fileInput {
-            display: none;
-        }
+.input-area {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+}
 
-        #selectedFile {
-            display: none;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: #f0f0f0;
-            border-radius: 8px;
-        }
+body.dark .input-area {
+    border-color: #444;
+}
 
-        body.dark #selectedFile {
-            background: #2b2b2b;
-        }
+.controls {
+    display: flex;
+    gap: 8px;
+}
 
-        #selectedImage {
-            max-width: 100px;
-            max-height: 100px;
-            display: none;
-            margin-top: 5px;
-            border-radius: 5px;
-        }
+#messageInput {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
 
-        .error {
-            color: #b91c1c;
-        }
+body.dark #messageInput {
+    background: #292929;
+    color: white;
+    border-color: #555;
+}
 
-        body.dark .error {
-            color: #ff7070;
-        }
+button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
 
-        @media (max-width: 600px) {
+#attachButton {
+    background: #eee;
+}
 
-            .chat-container {
-                height: 95vh;
-                margin: 10px auto;
-            }
+#sendButton {
+    background: #222;
+    color: white;
+}
 
-            .controls {
-                gap: 5px;
-            }
+#fileInput {
+    display: none;
+}
 
-            button {
-                padding: 12px;
-            }
+#selectedFile {
+    display: none;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: #f0f0f0;
+    border-radius: 8px;
+}
 
-        }
+body.dark #selectedFile {
+    background: #292929;
+}
 
-    </style>
+#selectedImage {
+    max-width: 100px;
+    max-height: 100px;
+    display: none;
+    margin-top: 5px;
+}
+
+.private {
+    background: #7c2d12 !important;
+    color: white;
+}
+
+.clear-history {
+    margin-top: 10px;
+    width: 100%;
+    background: #ddd;
+}
+
+body.dark .clear-history {
+    background: #444;
+    color: white;
+}
+
+@media (max-width: 800px) {
+
+    .sidebar {
+        display: none;
+    }
+
+    .chat-container {
+        height: 95vh;
+    }
+
+}
+
+</style>
 
 </head>
 
-
 <body>
 
+<div class="app">
 
-    <div class="chat-container">
+<!-- HISTORY -->
 
+<div class="sidebar">
 
-        <div class="header">
+<h2>📚 History</h2>
 
-            <button
-                id="themeButton"
-                type="button"
-                title="Toggle light/dark mode"
-            >
-                🌙
-            </button>
+<input
+    id="historySearch"
+    placeholder="Search history..."
+>
 
-            <h1>Art Mentor 🎨</h1>
+<div
+    id="history"
+    class="history">
+</div>
 
-            <p>
-                Critical, honest and encouraging
-            </p>
+<button
+    class="clear-history"
+    id="clearHistory">
+    🗑️ Clear History
+</button>
 
-        </div>
+</div>
 
 
-        <div id="messages">
+<!-- CHAT -->
 
-            <div class="message ai">
+<div class="chat-container">
 
-                <b>Art Mentor:</b>
+<div class="header">
 
-                <p>
-                    Upload an artwork and I'll give you an honest critique.
-                </p>
+<div class="header-buttons">
 
-                <p>
-                    I'll also rate every artwork out of 10.
-                </p>
+<button
+    id="themeButton">
+    🌙
+</button>
 
-            </div>
+<button
+    id="privateButton">
+    🔓
+</button>
 
-        </div>
+</div>
 
+<h1>Art Mentor 🎨</h1>
 
-        <div class="input-area">
+<p>
+Critical, honest and encouraging
+</p>
 
+</div>
 
-            <div id="selectedFile">
 
-                <b>Selected artwork:</b>
+<div id="messages">
 
-                <span id="fileName"></span>
+<div class="message ai">
 
-                <img id="selectedImage">
+<b>Art Mentor:</b>
 
-            </div>
+<p>
+Upload an artwork and I'll give you an honest critique.
+</p>
 
+<p>
+I'll also rate every artwork out of 10.
+</p>
 
-            <div class="controls">
+</div>
 
+</div>
 
-                <input
-                    id="messageInput"
-                    type="text"
-                    placeholder="Ask your art teacher..."
-                    autocomplete="off"
-                >
 
+<div class="input-area">
 
-                <input
-                    id="fileInput"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                >
+<div id="selectedFile">
 
+<b>Selected artwork:</b>
 
-                <button
-                    id="attachButton"
-                    type="button"
-                    title="Attach artwork"
-                >
-                    📎
-                </button>
+<span id="fileName"></span>
 
+<img id="selectedImage">
 
-                <button
-                    id="sendButton"
-                    type="button"
-                >
-                    Send
-                </button>
+</div>
 
 
-            </div>
+<div class="controls">
 
+<input
+    id="messageInput"
+    placeholder="Ask your art teacher..."
+    autocomplete="off"
+>
 
-        </div>
+<input
+    id="fileInput"
+    type="file"
+    accept="image/png,image/jpeg,image/webp"
+>
 
+<button id="attachButton">
+📎
+</button>
 
-    </div>
+<button id="sendButton">
+Send
+</button>
 
+</div>
 
-    <script>
+</div>
 
+</div>
 
-        // --------------------------------------------------
-        // ELEMENTS
-        // --------------------------------------------------
+</div>
 
-        const input =
-            document.getElementById("messageInput");
 
-        const messages =
-            document.getElementById("messages");
+<script>
 
-        const fileInput =
-            document.getElementById("fileInput");
+const input =
+document.getElementById("messageInput");
 
-        const attachButton =
-            document.getElementById("attachButton");
+const messages =
+document.getElementById("messages");
 
-        const sendButton =
-            document.getElementById("sendButton");
+const fileInput =
+document.getElementById("fileInput");
 
-        const selectedFile =
-            document.getElementById("selectedFile");
+const attachButton =
+document.getElementById("attachButton");
 
-        const fileName =
-            document.getElementById("fileName");
+const sendButton =
+document.getElementById("sendButton");
 
-        const selectedImage =
-            document.getElementById("selectedImage");
+const selectedFile =
+document.getElementById("selectedFile");
 
-        const themeButton =
-            document.getElementById("themeButton");
+const fileName =
+document.getElementById("fileName");
 
+const selectedImage =
+document.getElementById("selectedImage");
 
-        // --------------------------------------------------
-        // IMAGE DATA
-        // --------------------------------------------------
+const themeButton =
+document.getElementById("themeButton");
 
-        let selectedImageData = null;
+const privateButton =
+document.getElementById("privateButton");
 
+const historyElement =
+document.getElementById("history");
 
-        // --------------------------------------------------
-        // LIGHT / DARK MODE
-        // --------------------------------------------------
+const historySearch =
+document.getElementById("historySearch");
 
-        const savedTheme =
-            localStorage.getItem("artMentorTheme");
+const clearHistory =
+document.getElementById("clearHistory");
 
 
-        if (savedTheme === "dark") {
+let selectedImageData = null;
 
-            document.body.classList.add("dark");
+let privateMode = false;
 
-            themeButton.textContent = "☀️";
+let currentConversation = null;
 
-        }
 
+/* THEME */
 
-        themeButton.addEventListener(
-            "click",
-            function () {
+if (
+localStorage.getItem("artMentorTheme")
+=== "dark"
+) {
 
-                document.body.classList.toggle("dark");
+document.body.classList.add("dark");
 
+themeButton.textContent = "☀️";
 
-                const isDark =
-                    document.body.classList.contains("dark");
+}
 
 
-                if (isDark) {
+themeButton.onclick =
+function () {
 
-                    themeButton.textContent = "☀️";
+document.body.classList.toggle("dark");
 
-                    localStorage.setItem(
-                        "artMentorTheme",
-                        "dark"
-                    );
+const dark =
+document.body.classList.contains("dark");
 
-                } else {
+themeButton.textContent =
+dark ? "☀️" : "🌙";
 
-                    themeButton.textContent = "🌙";
+localStorage.setItem(
+"artMentorTheme",
+dark ? "dark" : "light"
+);
 
-                    localStorage.setItem(
-                        "artMentorTheme",
-                        "light"
-                    );
+};
 
-                }
 
-            }
-        );
+/* PRIVATE MODE */
 
+privateButton.onclick =
+function () {
 
-        // --------------------------------------------------
-        // OPEN FILE SELECTOR
-        // --------------------------------------------------
+privateMode =
+!privateMode;
 
-        attachButton.addEventListener(
-            "click",
-            function () {
+if (privateMode) {
 
-                fileInput.click();
+privateButton.textContent = "🔒";
 
-            }
-        );
+privateButton.classList.add(
+"private"
+);
 
+privateButton.title =
+"Private mode ON";
 
-        // --------------------------------------------------
-        // HANDLE IMAGE
-        // --------------------------------------------------
+} else {
 
-        fileInput.addEventListener(
-            "change",
-            function () {
+privateButton.textContent = "🔓";
 
-                const file =
-                    fileInput.files[0];
+privateButton.classList.remove(
+"private"
+);
 
+privateButton.title =
+"Private mode OFF";
 
-                if (!file) {
+}
 
-                    return;
+};
 
-                }
 
+/* FILE */
 
-                if (!file.type.startsWith("image/")) {
+attachButton.onclick =
+function () {
 
-                    alert("Please select an image.");
+fileInput.click();
 
-                    fileInput.value = "";
+};
 
-                    return;
 
-                }
+fileInput.onchange =
+function () {
 
+const file =
+fileInput.files[0];
 
-                fileName.textContent =
-                    file.name;
+if (!file) return;
 
-                selectedFile.style.display =
-                    "block";
+if (!file.type.startsWith("image/")) {
 
+alert("Please select an image.");
 
-                const reader =
-                    new FileReader();
+return;
 
+}
 
-                reader.onload =
-                    function (event) {
+fileName.textContent =
+file.name;
 
-                        selectedImage.src =
-                            event.target.result;
+selectedFile.style.display =
+"block";
 
-                        selectedImage.style.display =
-                            "block";
+const reader =
+new FileReader();
 
+reader.onload =
+function (event) {
 
-                        selectedImageData = {
+selectedImage.src =
+event.target.result;
 
-                            mimeType:
-                                file.type,
+selectedImage.style.display =
+"block";
 
-                            data:
-                                event.target.result
-                                    .split(",")[1]
+selectedImageData = {
 
-                        };
+mimeType: file.type,
 
-                    };
+data:
+event.target.result
+.split(",")[1]
 
+};
 
-                reader.readAsDataURL(file);
+};
 
-            }
-        );
+reader.readAsDataURL(file);
 
+};
 
-        // --------------------------------------------------
-        // SEND BUTTON
-        // --------------------------------------------------
 
-        sendButton.addEventListener(
-            "click",
-            sendMessage
-        );
+/* HISTORY */
 
+function getHistory() {
 
-        // --------------------------------------------------
-        // ENTER KEY
-        // --------------------------------------------------
+return JSON.parse(
+localStorage.getItem(
+"artMentorHistory"
+) || "[]"
+);
 
-        input.addEventListener(
-            "keydown",
-            function (event) {
+}
 
-                if (event.key === "Enter") {
 
-                    event.preventDefault();
+function saveHistory(history) {
 
-                    sendMessage();
+localStorage.setItem(
+"artMentorHistory",
+JSON.stringify(history)
+);
 
-                }
+}
 
-            }
-        );
 
+function renderHistory() {
 
-        // --------------------------------------------------
-        // SEND MESSAGE
-        // --------------------------------------------------
+const history =
+getHistory();
 
-        async function sendMessage() {
+const search =
+historySearch.value
+.toLowerCase();
 
+historyElement.innerHTML = "";
 
-            const message =
-                input.value.trim();
+history
+.filter(item =>
+item.title
+.toLowerCase()
+.includes(search)
+)
+.forEach(item => {
 
+const div =
+document.createElement("div");
 
-            if (
-                message === "" &&
-                !selectedImageData
-            ) {
+div.className =
+"history-item";
 
-                return;
+div.innerHTML = `
 
-            }
+<span>${escapeHTML(item.title)}</span>
 
+<button
+class="history-delete"
+data-id="${item.id}">
+🗑️
+</button>
 
-            // --------------------------------------------------
-            // SHOW USER MESSAGE
-            // --------------------------------------------------
+`;
 
-            let userHTML =
-                "<b>You:</b>";
+div.onclick =
+function () {
 
+loadConversation(item.id);
 
-            if (message !== "") {
+};
 
-                userHTML +=
-                    `<p>${escapeHTML(message)}</p>`;
+const deleteButton =
+div.querySelector(
+".history-delete"
+);
 
-            }
+deleteButton.onclick =
+function (event) {
 
+event.stopPropagation();
 
-            if (selectedImageData) {
+deleteConversation(item.id);
 
-                userHTML += `
-                    <img
-                        class="art-preview"
-                        src="data:${selectedImageData.mimeType};base64,${selectedImageData.data}"
-                    >
-                `;
+};
 
-            }
+historyElement.appendChild(div);
 
+});
 
-            const userMessage =
-                document.createElement("div");
+}
 
-            userMessage.className =
-                "message user";
 
-            userMessage.innerHTML =
-                userHTML;
+function deleteConversation(id) {
 
-            messages.appendChild(
-                userMessage
-            );
+const history =
+getHistory().filter(
+item => item.id !== id
+);
 
+saveHistory(history);
 
-            input.value = "";
+renderHistory();
 
+}
 
-            // --------------------------------------------------
-            // LOADING MESSAGE
-            // --------------------------------------------------
 
-            const loading =
-                document.createElement("div");
+clearHistory.onclick =
+function () {
 
-            loading.className =
-                "message ai";
+if (
+confirm(
+"Delete all conversation history?"
+)
+) {
 
-            loading.innerHTML =
-                "<b>Art Mentor:</b> Analyzing your artwork...";
+localStorage.removeItem(
+"artMentorHistory"
+);
 
+renderHistory();
 
-            messages.appendChild(
-                loading
-            );
+}
 
+};
 
-            messages.scrollTop =
-                messages.scrollHeight;
 
+historySearch.oninput =
+renderHistory;
 
-            // --------------------------------------------------
-            // SEND TO RENDER
-            // --------------------------------------------------
 
-            try {
+/* CREATE CONVERSATION */
 
+function createConversation(message) {
 
-                console.log(
-                    "Sending request to Render..."
-                );
+const title =
+message.length > 35
+? message.substring(0, 35) + "..."
+: message || "Artwork critique";
 
+return {
 
-                const response =
-                    await fetch(
-                        "https://ai-rxzd.onrender.com/chat",
-                        {
+id: Date.now(),
 
-                            method: "POST",
+title: title,
 
-                            headers: {
+messages: []
 
-                                "Content-Type":
-                                    "application/json"
+};
 
-                            },
+}
 
-                            body:
-                                JSON.stringify({
 
-                                    message:
-                                        message,
+/* SAVE CONVERSATION */
 
-                                    image:
-                                        selectedImageData
+function saveCurrentConversation() {
 
-                                })
+if (
+privateMode ||
+!currentConversation
+) {
 
-                        }
-                    );
+return;
 
+}
 
-                console.log(
-                    "Server response:",
-                    response.status
-                );
+const history =
+getHistory();
 
+const index =
+history.findIndex(
+item =>
+item.id === currentConversation.id
+);
 
-                if (!response.ok) {
+if (index >= 0) {
 
-                    throw new Error(
-                        "Server returned HTTP " +
-                        response.status
-                    );
+history[index] =
+currentConversation;
 
-                }
+} else {
 
+history.unshift(
+currentConversation
+);
 
-                const data =
-                    await response.json();
+}
 
+saveHistory(history);
 
-                console.log(
-                    "AI response received."
-                );
+renderHistory();
 
+}
 
-                loading.remove();
 
+/* LOAD CONVERSATION */
 
-                // --------------------------------------------------
-                // SHOW AI RESPONSE
-                // --------------------------------------------------
+function loadConversation(id) {
 
-                const aiMessage =
-                    document.createElement("div");
+const history =
+getHistory();
 
-                aiMessage.className =
-                    "message ai";
+const conversation =
+history.find(
+item => item.id === id
+);
 
+if (!conversation) return;
 
-                aiMessage.innerHTML = `
+currentConversation =
+conversation;
 
-                    <b>Art Mentor:</b>
+messages.innerHTML = "";
 
-                    <p>
-                        ${formatResponse(data.reply)}
-                    </p>
+conversation.messages.forEach(
+message => {
 
-                `;
+const div =
+document.createElement("div");
 
+div.className =
+"message " +
+message.role;
 
-                messages.appendChild(
-                    aiMessage
-                );
+div.innerHTML =
+message.html;
 
+messages.appendChild(div);
 
-            }
+});
 
+messages.scrollTop =
+messages.scrollHeight;
 
-            catch (error) {
+}
 
 
-                console.error(
-                    "CHAT ERROR:",
-                    error
-                );
+/* SEND */
 
+sendButton.onclick =
+sendMessage;
 
-                loading.innerHTML = `
 
-                    <b>Art Mentor:</b>
+input.onkeydown =
+function (event) {
 
-                    <p class="error">
-                        Connection failed.
-                    </p>
+if (event.key === "Enter") {
 
-                    <small>
-                        ${escapeHTML(error.message)}
-                    </small>
+event.preventDefault();
 
-                `;
+sendMessage();
 
-            }
+}
 
+};
 
-            // --------------------------------------------------
-            // CLEAR IMAGE
-            // --------------------------------------------------
 
-            selectedImageData =
-                null;
+async function sendMessage() {
 
-            fileInput.value =
-                "";
+const message =
+input.value.trim();
 
-            selectedFile.style.display =
-                "none";
+if (
+message === "" &&
+!selectedImageData
+) {
 
-            selectedImage.style.display =
-                "none";
+return;
 
+}
 
-            messages.scrollTop =
-                messages.scrollHeight;
 
-        }
+/* CONVERSATION */
 
+if (
+!currentConversation &&
+!privateMode
+) {
 
-        // --------------------------------------------------
-        // ESCAPE HTML
-        // --------------------------------------------------
+currentConversation =
+createConversation(message);
 
-        function escapeHTML(text) {
+}
 
-            const div =
-                document.createElement("div");
 
-            div.textContent =
-                text;
+/* USER MESSAGE */
 
-            return div.innerHTML;
+let userHTML =
+"<b>You:</b>";
 
-        }
+if (message) {
 
+userHTML +=
+`<p>${escapeHTML(message)}</p>`;
 
-        // --------------------------------------------------
-        // FORMAT AI RESPONSE
-        // --------------------------------------------------
+}
 
-        function formatResponse(text) {
+if (selectedImageData) {
 
-            if (!text) {
+userHTML += `
 
-                return "The AI returned an empty response.";
+<img
+class="art-preview"
+src="data:${selectedImageData.mimeType};base64,${selectedImageData.data}"
+>
 
-            }
+`;
 
+}
 
-            return escapeHTML(text)
-                .replace(/\n/g, "<br>");
 
-        }
+const userDiv =
+document.createElement("div");
 
+userDiv.className =
+"message user";
 
-    </script>
+userDiv.innerHTML =
+userHTML;
 
+messages.appendChild(userDiv);
+
+
+/* SAVE USER */
+
+if (!privateMode) {
+
+currentConversation.messages.push({
+
+role: "user",
+
+html: userHTML
+
+});
+
+saveCurrentConversation();
+
+}
+
+
+input.value = "";
+
+
+/* LOADING */
+
+const loading =
+document.createElement("div");
+
+loading.className =
+"message ai";
+
+loading.innerHTML =
+"<b>Art Mentor:</b> Analyzing...";
+
+messages.appendChild(loading);
+
+messages.scrollTop =
+messages.scrollHeight;
+
+
+try {
+
+const response =
+await fetch(
+"https://ai-rxzd.onrender.com/chat",
+{
+
+method: "POST",
+
+headers: {
+
+"Content-Type":
+"application/json"
+
+},
+
+body: JSON.stringify({
+
+message: message,
+
+image: selectedImageData,
+
+privateMode:
+privateMode
+
+})
+
+});
+
+
+if (!response.ok) {
+
+throw new Error(
+"Server returned HTTP " +
+response.status
+);
+
+}
+
+
+const data =
+await response.json();
+
+loading.remove();
+
+
+const replyHTML = `
+
+<b>Art Mentor:</b>
+
+<p>
+${formatResponse(data.reply)}
+</p>
+
+`;
+
+
+const aiDiv =
+document.createElement("div");
+
+aiDiv.className =
+"message ai";
+
+aiDiv.innerHTML =
+replyHTML;
+
+messages.appendChild(aiDiv);
+
+
+/* SAVE AI */
+
+if (!privateMode) {
+
+currentConversation.messages.push({
+
+role: "ai",
+
+html: replyHTML
+
+});
+
+saveCurrentConversation();
+
+}
+
+
+} catch (error) {
+
+console.error(error);
+
+loading.innerHTML = `
+
+<b>Art Mentor:</b>
+
+<p>
+Connection failed.
+</p>
+
+<small>
+${escapeHTML(error.message)}
+</small>
+
+`;
+
+}
+
+
+/* CLEAR IMAGE */
+
+selectedImageData = null;
+
+fileInput.value = "";
+
+selectedFile.style.display =
+"none";
+
+selectedImage.style.display =
+"none";
+
+messages.scrollTop =
+messages.scrollHeight;
+
+}
+
+
+/* HELPERS */
+
+function escapeHTML(text) {
+
+const div =
+document.createElement("div");
+
+div.textContent =
+text;
+
+return div.innerHTML;
+
+}
+
+
+function formatResponse(text) {
+
+if (!text) {
+
+return "The AI returned an empty response.";
+
+}
+
+return escapeHTML(text)
+.replace(/\n/g, "<br>");
+
+}
+
+
+renderHistory();
+
+</script>
 
 </body>
 
