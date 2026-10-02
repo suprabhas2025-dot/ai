@@ -131,6 +131,10 @@
             border-radius: 5px;
         }
 
+        a {
+            color: #2563eb;
+        }
+
     </style>
 
 </head>
@@ -144,10 +148,11 @@
             <h1>Art Mentor 🎨</h1>
 
             <p>
-                Critical, honest and encouraging
+                Honest, thoughtful and encouraging
             </p>
 
         </div>
+
 
         <div id="messages">
 
@@ -155,13 +160,18 @@
 
                 <b>Art Mentor:</b>
 
-                Upload an artwork and I'll give you an honest critique.
+                <p>
+                    Upload an artwork and I'll give you an honest critique.
+                </p>
 
-                I'll also rate every artwork out of 10.
+                <p>
+                    I'll also rate every artwork out of 10.
+                </p>
 
             </div>
 
         </div>
+
 
         <div class="input-area">
 
@@ -174,6 +184,7 @@
                 <img id="selectedImage">
 
             </div>
+
 
             <div class="controls">
 
@@ -306,9 +317,10 @@
 
             let userHTML = "<b>You:</b>";
 
+
             if (message !== "") {
 
-                userHTML += `<p>${message}</p>`;
+                userHTML += `<p>${escapeHTML(message)}</p>`;
 
             }
 
@@ -347,29 +359,42 @@
 
             messages.appendChild(loading);
 
+
             messages.scrollTop =
                 messages.scrollHeight;
 
 
             try {
 
-                const response = await fetch("/chat", {
+                const response = await fetch(
+                    "https://ai-rxzd.onrender.com/chat",
+                    {
 
-                    method: "POST",
+                        method: "POST",
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
 
-                    body: JSON.stringify({
+                        body: JSON.stringify({
 
-                        message: message,
+                            message: message,
 
-                        image: selectedImageData
+                            image: selectedImageData
 
-                    })
+                        })
 
-                });
+                    }
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Server returned HTTP " + response.status
+                    );
+
+                }
 
 
                 const data =
@@ -382,7 +407,7 @@
                 messages.innerHTML += `
                     <div class="message ai">
                         <b>Art Mentor:</b>
-                        <p>${data.reply.replace(/\n/g, "<br>")}</p>
+                        <p>${formatAIResponse(data.reply)}</p>
                     </div>
                 `;
 
@@ -391,8 +416,17 @@
 
                 console.error(error);
 
-                loading.innerHTML =
-                    "<b>Art Mentor:</b> Connection failed.";
+                loading.innerHTML = `
+                    <b>Art Mentor:</b>
+
+                    <p>
+                        Connection failed.
+                    </p>
+
+                    <small>
+                        ${escapeHTML(error.message)}
+                    </small>
+                `;
 
             }
 
@@ -408,6 +442,30 @@
 
             messages.scrollTop =
                 messages.scrollHeight;
+
+        }
+
+
+        function escapeHTML(text) {
+
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+
+        function formatAIResponse(text) {
+
+            return escapeHTML(text)
+                .replace(/\n/g, "<br>")
+                .replace(
+                    /(https?:\/\/[^\s<]+)/g,
+                    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+                );
 
         }
 
