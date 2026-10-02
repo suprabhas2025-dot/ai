@@ -20,12 +20,24 @@ app.use(express.json({
     limit: "20mb"
 }));
 
+app.use(express.static("public"));
+
 const MEMORY_FILE = path.join(__dirname, "memory.json");
 
 
-/* -----------------------------------------
-   MEMORY FUNCTIONS
------------------------------------------ */
+function emptyMemory() {
+    return {
+        artistProfile: {
+            goals: [],
+            strengths: [],
+            weaknesses: [],
+            preferences: [],
+            currentFocus: []
+        },
+        importantMemories: []
+    };
+}
+
 
 function loadMemory() {
 
@@ -33,46 +45,26 @@ function loadMemory() {
 
         if (!fs.existsSync(MEMORY_FILE)) {
 
-            const emptyMemory = {
-                artistProfile: {
-                    goals: [],
-                    strengths: [],
-                    weaknesses: [],
-                    preferences: [],
-                    currentFocus: []
-                },
-                importantMemories: []
-            };
+            const memory = emptyMemory();
 
             fs.writeFileSync(
                 MEMORY_FILE,
-                JSON.stringify(emptyMemory, null, 2)
+                JSON.stringify(memory, null, 2)
             );
 
-            return emptyMemory;
+            return memory;
         }
 
-        const data = fs.readFileSync(
-            MEMORY_FILE,
-            "utf8"
+        return JSON.parse(
+            fs.readFileSync(MEMORY_FILE, "utf8")
         );
-
-        return JSON.parse(data);
 
     } catch (error) {
 
-        console.error("Could not load memory:", error);
+        console.error("Memory loading error:", error);
 
-        return {
-            artistProfile: {
-                goals: [],
-                strengths: [],
-                weaknesses: [],
-                preferences: [],
-                currentFocus: []
-            },
-            importantMemories: []
-        };
+        return emptyMemory();
+
     }
 }
 
@@ -90,18 +82,15 @@ function saveMemory(memory) {
 
     } catch (error) {
 
-        console.error("Could not save memory:", error);
+        console.error("Memory saving error:", error);
 
     }
+
 }
 
 
 let memory = loadMemory();
 
-
-/* -----------------------------------------
-   ART TEACHER PERSONALITY
------------------------------------------ */
 
 const ART_TEACHER_INSTRUCTIONS = `
 You are Art Mentor, a supportive but honest art teacher.
@@ -139,20 +128,12 @@ OVERALL RATING: X/10
 `;
 
 
-/* -----------------------------------------
-   HOME
------------------------------------------ */
-
 app.get("/", (req, res) => {
 
     res.send("Art Mentor backend is running!");
 
 });
 
-
-/* -----------------------------------------
-   VIEW MEMORY
------------------------------------------ */
 
 app.get("/memory", (req, res) => {
 
@@ -161,49 +142,47 @@ app.get("/memory", (req, res) => {
 });
 
 
-/* -----------------------------------------
-   CHAT
------------------------------------------ */
-
 app.post("/chat", async (req, res) => {
 
     try {
 
-        console.log("Received chat request.");
-
-        const message =
-            req.body.message || "";
-
-        const image =
-            req.body.image || null;
+        const message = req.body.message || "";
+        const image = req.body.image || null;
+        const privateMode = req.body.privateMode === true;
 
 
-        /*
-         * Give Gemini the artist's existing memory.
-         */
-
-        const memoryText = JSON.stringify(
-            memory,
-            null,
-            2
+        console.log(
+            privateMode
+                ? "Private chat request."
+                : "Normal chat request."
         );
+
+
+        let memoryText = "No artist memory is available.";
+
+        if (!privateMode) {
+
+            memoryText = JSON.stringify(
+                memory,
+                null,
+                2
+            );
+
+        }
 
 
         const prompt = `
 
 ${ART_TEACHER_INSTRUCTIONS}
 
-
-IMPORTANT ARTIST MEMORY:
+ARTIST MEMORY:
 
 ${memoryText}
 
+Use the artist memory when it is relevant.
 
-Use this memory when it is relevant.
-
-Do not mention the existence of the memory system
-unless the artist asks about it.
-
+Do not mention the memory system unless the artist
+specifically asks about it.
 
 CURRENT MESSAGE:
 
@@ -213,11 +192,9 @@ ${message}
 
 
         const contents = [
-
             {
                 text: prompt
             }
-
         ];
 
 
@@ -227,11 +204,9 @@ ${message}
 
                 inlineData: {
 
-                    mimeType:
-                        image.mimeType,
+                    mimeType: image.mimeType,
 
-                    data:
-                        image.data
+                    data: image.data
 
                 }
 
@@ -240,57 +215,47 @@ ${message}
         }
 
 
-        console.log(
-            "Sending request to Gemini..."
-        );
-
-
         const response =
             await ai.models.generateContent({
 
-                model:
-                    "gemini-3.1-flash-lite",
+                model: "gemini-3.1-flash-lite",
 
-                contents:
-                    contents
+                contents: contents
 
             });
 
 
-        const reply =
-            response.text;
-
-
-        console.log(
-            "Gemini responded successfully."
-        );
+        const reply = response.text;
 
 
         /*
-         * Ask Gemini separately what,
-         * if anything, should be remembered.
+         * PRIVATE MODE:
+         *
+         * Do not create or update memories.
          */
 
-        const memoryResponse =
-            await ai.models.generateContent({
+        if (!privateMode) {
 
-                model:
-                    "gemini-3.1-flash-lite",
+            try {
 
-                contents: [
+                const memoryResponse =
+                    await ai.models.generateContent({
 
-                    {
+                        model: "gemini-3.1-flash-lite",
 
-                        text: `
+                        contents: [
+
+                            {
+
+                                text: `
 
 You maintain long-term memory for an AI art teacher.
 
-Here is the current artist memory:
+Current artist memory:
 
 ${JSON.stringify(memory, null, 2)}
 
-
-Here is the latest conversation:
+Latest conversation:
 
 Artist:
 ${message}
@@ -298,22 +263,18 @@ ${message}
 Art Mentor:
 ${reply}
 
+Identify ONLY durable information worth remembering.
 
-Determine whether the conversation contains
-IMPORTANT information worth remembering about
-the artist.
-
-Only remember durable information such as:
+Remember things such as:
 
 - artistic goals
 - artistic preferences
 - recurring strengths
 - recurring weaknesses
 - current areas of practice
-- important long-term preferences
-- meaningful progress
+- meaningful artistic progress
 
-DO NOT remember:
+Do NOT remember:
 
 - casual conversation
 - temporary emotions
@@ -321,8 +282,7 @@ DO NOT remember:
 - random facts
 - sensitive personal information
 
-
-Return ONLY valid JSON in exactly this structure:
+Return ONLY valid JSON:
 
 {
   "artistProfile": {
@@ -335,49 +295,32 @@ Return ONLY valid JSON in exactly this structure:
   "importantMemories": []
 }
 
-Only add genuinely useful information.
-Do not delete existing useful memories.
+Do not delete useful existing memories.
 
 `
 
-                    }
+                            }
 
-                ]
+                        ]
 
-            });
-
-
-        /*
-         * Try to parse Gemini's memory update.
-         */
-
-        try {
-
-            let memoryText =
-                memoryResponse.text.trim();
+                    });
 
 
-            /*
-             * Remove markdown JSON fences
-             * if Gemini adds them.
-             */
-
-            memoryText =
-                memoryText
-                    .replace(/^```json\s*/i, "")
-                    .replace(/^```\s*/i, "")
-                    .replace(/\s*```$/i, "")
-                    .trim();
+                let memoryText =
+                    memoryResponse.text.trim();
 
 
-            const newMemory =
-                JSON.parse(memoryText);
+                memoryText =
+                    memoryText
+                        .replace(/^```json\s*/i, "")
+                        .replace(/^```\s*/i, "")
+                        .replace(/\s*```$/i, "")
+                        .trim();
 
 
-            if (
-                newMemory &&
-                newMemory.artistProfile
-            ) {
+                const newMemory =
+                    JSON.parse(memoryText);
+
 
                 memory =
                     mergeMemory(
@@ -385,15 +328,22 @@ Do not delete existing useful memories.
                         newMemory
                     );
 
+
                 saveMemory(memory);
+
+            } catch (memoryError) {
+
+                console.error(
+                    "Memory update skipped:",
+                    memoryError.message
+                );
 
             }
 
-        } catch (memoryError) {
+        } else {
 
-            console.error(
-                "Memory update skipped:",
-                memoryError.message
+            console.log(
+                "Private mode: memory was not updated."
             );
 
         }
@@ -408,12 +358,8 @@ Do not delete existing useful memories.
 
     } catch (error) {
 
-        console.error(
-            "GEMINI ERROR:"
-        );
-
+        console.error("GEMINI ERROR:");
         console.error(error);
-
 
         res.status(500).json({
 
@@ -427,23 +373,14 @@ Do not delete existing useful memories.
 });
 
 
-/* -----------------------------------------
-   MERGE MEMORY
------------------------------------------ */
-
-function mergeMemory(
-    oldMemory,
-    newMemory
-) {
+function mergeMemory(oldMemory, newMemory) {
 
     const categories = [
-
         "goals",
         "strengths",
         "weaknesses",
         "preferences",
         "currentFocus"
-
     ];
 
 
@@ -453,14 +390,14 @@ function mergeMemory(
             oldMemory.artistProfile[category] || [];
 
         const newItems =
-            newMemory.artistProfile[category] || [];
+            newMemory.artistProfile?.[category] || [];
 
 
         for (const item of newItems) {
 
             if (
                 typeof item === "string" &&
-                item.trim() !== "" &&
+                item.trim() &&
                 !oldItems.includes(item)
             ) {
 
@@ -470,10 +407,6 @@ function mergeMemory(
 
         }
 
-
-        /*
-         * Prevent unlimited growth.
-         */
 
         oldMemory.artistProfile[category] =
             oldItems.slice(-20);
@@ -492,7 +425,7 @@ function mergeMemory(
 
         if (
             typeof item === "string" &&
-            item.trim() !== "" &&
+            item.trim() &&
             !oldMemories.includes(item)
         ) {
 
@@ -511,10 +444,6 @@ function mergeMemory(
 
 }
 
-
-/* -----------------------------------------
-   START SERVER
------------------------------------------ */
 
 app.listen(
     port,
