@@ -1,21 +1,19 @@
 const express = require("express");
+const cors = require("cors");
 const dotenv = require("dotenv");
 const { GoogleGenAI } = require("@google/genai");
 
 dotenv.config();
 
 const app = express();
-
 const port = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json({ limit: "20mb" }));
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
-
-app.use(express.json({ limit: "20mb" }));
-
-// Your index.html is in the root of the project
-app.use(express.static("."));
 
 const ART_TEACHER_INSTRUCTIONS = `
 You are a supportive but honest art teacher.
@@ -58,6 +56,10 @@ Always finish with:
 
 OVERALL RATING: X/10
 `;
+
+app.get("/", (req, res) => {
+    res.send("Art Mentor backend is running!");
+});
 
 app.post("/chat", async (req, res) => {
 
@@ -104,7 +106,7 @@ ${userMessage}`
         console.error(error);
 
         res.status(500).json({
-            reply: "Sorry, something went wrong."
+            reply: "Sorry, something went wrong with the AI."
         });
 
     }
