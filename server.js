@@ -5,14 +5,17 @@ const { GoogleGenAI } = require("@google/genai");
 dotenv.config();
 
 const app = express();
-const port = 3000;
+
+const port = process.env.PORT || 3000;
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
 app.use(express.json({ limit: "20mb" }));
-app.use(express.static("public"));
+
+// Your index.html is in the root of the project
+app.use(express.static("."));
 
 const ART_TEACHER_INSTRUCTIONS = `
 You are a supportive but honest art teacher.
@@ -110,6 +113,6 @@ ${userMessage}`
 
 app.listen(port, () => {
 
-    console.log(`Art Mentor running at http://localhost:${port}`);
+    console.log(`Art Mentor running on port ${port}`);
 
 });
