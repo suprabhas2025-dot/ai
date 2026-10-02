@@ -1,14 +1,15 @@
 {
   "name": "my-ai-chatbot",
   "version": "1.0.0",
-  "description": "My first AI chatbot",
+  "description": "AI Art Mentor",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "@google/genai": "latest",
-    "dotenv": "latest",
-    "express": "latest"
+    "@google/genai": "^2.25.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
   }
 }
