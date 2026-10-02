@@ -19,6 +19,13 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f2f2f2;
+            color: #222;
+            transition: background 0.25s, color 0.25s;
+        }
+
+        body.dark {
+            background: #121212;
+            color: #eeeeee;
         }
 
         .chat-container {
@@ -32,13 +39,20 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            transition: background 0.25s, box-shadow 0.25s;
+        }
+
+        body.dark .chat-container {
+            background: #1e1e1e;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
         }
 
         .header {
             background: #222;
             color: white;
-            padding: 20px;
+            padding: 18px 20px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -47,6 +61,20 @@
 
         .header p {
             margin-bottom: 0;
+        }
+
+        #themeButton {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: #444;
+            color: white;
+            padding: 8px 10px;
+            font-size: 18px;
+        }
+
+        #themeButton:hover {
+            background: #555;
         }
 
         #messages {
@@ -66,12 +94,24 @@
 
         .user {
             background: #dbeafe;
+            color: #222;
             margin-left: auto;
+        }
+
+        body.dark .user {
+            background: #263b52;
+            color: #eeeeee;
         }
 
         .ai {
             background: #eeeeee;
+            color: #222;
             margin-right: auto;
+        }
+
+        body.dark .ai {
+            background: #2b2b2b;
+            color: #eeeeee;
         }
 
         .art-preview {
@@ -85,6 +125,13 @@
         .input-area {
             padding: 15px;
             border-top: 1px solid #ddd;
+            background: white;
+            transition: background 0.25s, border-color 0.25s;
+        }
+
+        body.dark .input-area {
+            background: #1e1e1e;
+            border-top-color: #444;
         }
 
         .controls {
@@ -99,10 +146,22 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             outline: none;
+            background: white;
+            color: #222;
         }
 
         #messageInput:focus {
             border-color: #555;
+        }
+
+        body.dark #messageInput {
+            background: #2b2b2b;
+            color: white;
+            border-color: #555;
+        }
+
+        body.dark #messageInput::placeholder {
+            color: #aaa;
         }
 
         button {
@@ -119,6 +178,15 @@
 
         #attachButton:hover {
             background: #ddd;
+        }
+
+        body.dark #attachButton {
+            background: #444;
+            color: white;
+        }
+
+        body.dark #attachButton:hover {
+            background: #555;
         }
 
         #sendButton {
@@ -142,6 +210,10 @@
             border-radius: 8px;
         }
 
+        body.dark #selectedFile {
+            background: #2b2b2b;
+        }
+
         #selectedImage {
             max-width: 100px;
             max-height: 100px;
@@ -152,6 +224,10 @@
 
         .error {
             color: #b91c1c;
+        }
+
+        body.dark .error {
+            color: #ff7070;
         }
 
         @media (max-width: 600px) {
@@ -183,6 +259,14 @@
 
 
         <div class="header">
+
+            <button
+                id="themeButton"
+                type="button"
+                title="Toggle light/dark mode"
+            >
+                🌙
+            </button>
 
             <h1>Art Mentor 🎨</h1>
 
@@ -301,12 +385,67 @@
         const selectedImage =
             document.getElementById("selectedImage");
 
+        const themeButton =
+            document.getElementById("themeButton");
+
 
         // --------------------------------------------------
         // IMAGE DATA
         // --------------------------------------------------
 
         let selectedImageData = null;
+
+
+        // --------------------------------------------------
+        // LIGHT / DARK MODE
+        // --------------------------------------------------
+
+        const savedTheme =
+            localStorage.getItem("artMentorTheme");
+
+
+        if (savedTheme === "dark") {
+
+            document.body.classList.add("dark");
+
+            themeButton.textContent = "☀️";
+
+        }
+
+
+        themeButton.addEventListener(
+            "click",
+            function () {
+
+                document.body.classList.toggle("dark");
+
+
+                const isDark =
+                    document.body.classList.contains("dark");
+
+
+                if (isDark) {
+
+                    themeButton.textContent = "☀️";
+
+                    localStorage.setItem(
+                        "artMentorTheme",
+                        "dark"
+                    );
+
+                } else {
+
+                    themeButton.textContent = "🌙";
+
+                    localStorage.setItem(
+                        "artMentorTheme",
+                        "light"
+                    );
+
+                }
+
+            }
+        );
 
 
         // --------------------------------------------------
@@ -487,8 +626,6 @@
             );
 
 
-            // Clear input
-
             input.value = "";
 
 
@@ -562,10 +699,6 @@
                 );
 
 
-                // --------------------------------------------------
-                // SERVER ERROR
-                // --------------------------------------------------
-
                 if (!response.ok) {
 
                     throw new Error(
@@ -575,10 +708,6 @@
 
                 }
 
-
-                // --------------------------------------------------
-                // READ RESPONSE
-                // --------------------------------------------------
 
                 const data =
                     await response.json();
@@ -664,8 +793,6 @@
             selectedImage.style.display =
                 "none";
 
-
-            // Scroll down
 
             messages.scrollTop =
                 messages.scrollHeight;
